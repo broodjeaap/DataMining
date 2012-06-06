@@ -24,11 +24,9 @@ import com.mongodb.MongoException;
 
 public class Main {
 	
-	static int count = 0;
-	static long totalTime = 0;
-	
 	public static void main(String[] args){
 		Map<Integer, UserRatings> users = new TreeMap<>();
+		System.out.print("Reading file...");
 		try{
 			FileInputStream fstream = new FileInputStream("u.data");
 			DataInputStream in = new DataInputStream(fstream);
@@ -50,12 +48,8 @@ public class Main {
 				System.err.println("Error: " + e.getMessage());
 				e.printStackTrace();
 		}
-		System.out.println(Pearson.distance(users.get(1),users.get(2)));
-		users.get(1).setRecommendations(getRecommendations(users.get(300),users));
-		Map<Double, Integer> rec = users.get(1).getRecommendations();
-		for(Double d : rec.keySet()){
-			System.out.println("Film "+rec.get(d)+": "+d);
-		}
+		System.out.println("done");
+		System.out.print("Calculating recommendations...");
 		long finalStart = System.currentTimeMillis();
 		for(int id : users.keySet()){
 			UserRatings user = users.get(id);
@@ -63,10 +57,10 @@ public class Main {
 			user.setRecommendations(getRecommendations(user, users));
 			//System.out.println("Created recommendations for user "+user.getId()+" in "+(System.currentTimeMillis() - userStart)+"ms");
 		}
-		System.out.println("Created recommendations for all user in "+(System.currentTimeMillis() - finalStart)+"ms");
-		System.out.println("Number of distances above 0.9: "+Pearson.higherCount);
+		System.out.println("done\nCreated recommendations for all user in "+(System.currentTimeMillis() - finalStart)+"ms");
+		System.out.print("Writing to db...");
 		//Database.putUsers(users);
-		System.out.println(count+" "+(totalTime / count));
+		System.out.println("done");
 	}
 	
 	public static Map<Double, Integer> getRecommendations(UserRatings user, Map<Integer, UserRatings> users){
@@ -76,11 +70,9 @@ public class Main {
 			if(user == otherUser){
 				continue;
 			}
-			count++;
 			//userRankings.put(Pearson.distance(user, otherUser), otherUser);
-			long start = System.nanoTime();
-			double distance = Pearson.distance(user, otherUser);
-			totalTime += System.nanoTime() - start;
+			double distance = user.getPearson(otherUser);
+			otherUser.putPearson(user, distance);
 			int[] products = otherUser.getProductID();
 			int[] ratings = otherUser.getRatings();
 			for(int i = 0;i < products.length;++i){
@@ -92,12 +84,13 @@ public class Main {
 				ranking.put(i, rank);
 			}
 		}
+		for(int i : user.getProductID()){
+			ranking.remove(i);
+		}
 		Map<Double, Integer> sortedByRank = new TreeMap<>();
 		for(int i : ranking.keySet()){
 			sortedByRank.put(ranking.get(i), i);
 		}
 		return sortedByRank;
 	}
-	
-	
 }

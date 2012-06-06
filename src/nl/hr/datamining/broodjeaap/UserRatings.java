@@ -1,6 +1,7 @@
 package nl.hr.datamining.broodjeaap;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,12 +12,27 @@ public class UserRatings {
 	private int[] ratings = new int[10];
 	private int ratingsIndex = -1;
 	private Map<Double, Integer> recommendations;
+	private Map<Integer, Double> pearsonMap;
 	
 	
 	public UserRatings(int id,int productID,int rating){
 		this.id = id;
 		this.addId(productID);
 		this.addRating(rating);
+		pearsonMap = new HashMap<>();
+	}
+	
+	public Double getPearson(UserRatings otherUser){
+		Double tmp = pearsonMap.get(otherUser.getId());
+		if(tmp == null){
+			tmp = Pearson.distance(this, otherUser);
+			pearsonMap.put(otherUser.getId(), tmp);
+		}
+		return tmp;
+	}
+	
+	public void putPearson(UserRatings otherUser, double pearsonDistance){
+		pearsonMap.put(otherUser.getId(), pearsonDistance);
 	}
 	
 	public boolean addId(int i){

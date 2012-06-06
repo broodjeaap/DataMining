@@ -12,7 +12,9 @@ public class Pearson {
 		Arrays.sort(user1.getProductID()); //lazy
 		Arrays.sort(user2.getProductID());
 		Set<Integer> union = userProductsUnion(user1,user2);
-		
+		if(union.size() < 3){
+			return 0f;
+		}
 		int[] products1 = user1.getProductID();
 		int[] ratings1 = user1.getRatings();
 		int[] sharedRatings1 = new int[union.size()];
@@ -31,6 +33,7 @@ public class Pearson {
 				sharedRatings2[count++] = ratings2[a];
 			}
 		}
+
 		return distance(sharedRatings1,sharedRatings2);
 	}
 	

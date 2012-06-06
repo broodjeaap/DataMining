@@ -40,8 +40,15 @@ public class Database {
 				productRatings.put(String.valueOf(products[a]), ratings[a]);
 			}
 			user.put("ratings", productRatings);
-			BasicDBList recommendations = new BasicDBList();
-			recommendations.addAll(users.get(id).getRecommendations().values());
+			BasicDBObject recommendations = new BasicDBObject();
+			Map<Double, Integer> allRecommendations = users.get(id).getRecommendations();
+			int count = 1;
+			for(Double d : allRecommendations.keySet()){
+				recommendations.put(String.valueOf(count), allRecommendations.get(d));
+				if(count++ >= 20){
+					break;
+				}
+			}
 			user.put("recommendations", recommendations);
 			coll.insert(user);
 		}
